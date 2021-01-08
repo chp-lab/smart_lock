@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smartlock</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body>
+  <div class="container">
+    <br>
+    <h3>สถานะ : <span id="statsu_title"></span></h3>
+      <div id="img"></div>
+        <form action="" method="POST">
+          <input name="status" type="hidden" id="status">
+        </form>
+        <button class="btn btn-info"><span id="statsu_btn">-</span></button>
+  </div>
+</body>
+</html>
+
+<script>
+$(document).ready(function(){
+  setInterval(function (){
+    var image=""; 
+      $.ajax({
+        type: "GET",
+        headers:{"Authorization": "Device 9be0df5a-da0c-4428-b5bd-991b35f5b1bc:vEB1ratSCXyVDDjeDt1seBvaPrK5BGiV"},
+        url: "https://api.netpie.io/v2/device/shadow/data",
+        dataType : "json",
+        contentType: "application/json; charset=utf-8",
+          success: function(result){
+            if(result.data.lock_state == 1){
+              image = "img/unlock.png";
+               $("#statsu_btn").html("ต้องการล็อค");
+               $("#statsu_title").html("ไม่ล็อค");
+               $("#status").val(0);
+            }
+            if(result.data.lock_state == 0) {
+              image = "img/lock.png";
+              $("#statsu_btn").html("ต้องการปลดล็อค");
+              $("#statsu_title").html("ล็อค");
+              $("#status").val(1);
+            }
+            $("#img").html("<img src='"+ image + "' width='20%'>"); 
+              // console.log(result)
+          },
+          error:function(jqXHR, textStatus, errorThrown){
+            console.log(jqXHR);
+            // console.log(textStatus);
+            // console.log(errorThrown);
+          }
+      });
+  }, 800);//request every x seconds
+
+  $("button").click(function(){
+    var fm_status = $("form").serialize().substr(7);
+    alert_swal(fm_status);
+    $.ajax({
+        type: "PUT",
+        headers:{"Authorization": "Device ad0f186d-4eea-4105-a1a2-c9a0e4cad0ff:EqfgqPoppB9SdYwxVCiCdzdMmzp1V9rm"},
+        url: "https://api.netpie.io/v2/device/message/set/status",
+        dataType : "text",
+        contentType: "application/json",
+        data: fm_status,
+          success: function(result){
+            console.log(result)
+          },
+          error:function(jqXHR, textStatus, errorThrown){
+            console.log(jqXHR);
+          }
+      });
+  });
+  function alert_swal(status){
+    var title_status="";
+      if(status==1) {title_status = "ปลดล็อคเรียบร้อยแล้ว";}
+      if(status==0) {title_status = "ล็อคเรียบร้อยแล้ว";}
+      Swal.fire({
+        icon: 'success',
+        title: title_status,
+        showConfirmButton: false,
+        timer: 1500,
+        showClass: {
+          popup: 'animate__animated animate__fadeInDown'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOutUp'
+        }
+      })
+  }
+});
+</script>
+
+<style>
+  .container{
+    text-align: center;
+  }
+  body{
+    background-image: url("img/bg.jpg") ;
+    background-repeat: repeat-x;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+  }
+</style>
